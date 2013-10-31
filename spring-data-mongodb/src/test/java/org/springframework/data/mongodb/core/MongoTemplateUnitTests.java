@@ -64,14 +64,10 @@ public class MongoTemplateUnitTests extends MongoOperationsUnitTests {
 
 	MongoTemplate template;
 
-	@Mock
-	MongoDbFactory factory;
-	@Mock
-	Mongo mongo;
-	@Mock
-	DB db;
-	@Mock
-	DBCollection collection;
+	@Mock MongoDbFactory factory;
+	@Mock Mongo mongo;
+	@Mock DB db;
+	@Mock DBCollection collection;
 
 	MappingMongoConverter converter;
 	MongoMappingContext mappingContext;
@@ -113,7 +109,10 @@ public class MongoTemplateUnitTests extends MongoOperationsUnitTests {
 
 	@Test(expected = InvalidDataAccessApiUsageException.class)
 	public void rejectsNotFoundMapReduceResource() {
-		template.setApplicationContext(new GenericApplicationContext());
+
+		GenericApplicationContext ctx = new GenericApplicationContext();
+		ctx.refresh();
+		template.setApplicationContext(ctx);
 		template.mapReduce("foo", "classpath:doesNotExist.js", "function() {}", Person.class);
 	}
 
@@ -212,6 +211,7 @@ public class MongoTemplateUnitTests extends MongoOperationsUnitTests {
 		GenericApplicationContext applicationContext = new GenericApplicationContext();
 		applicationContext.getBeanFactory().registerSingleton("foo",
 				new MongoPersistentEntityIndexCreator(new MongoMappingContext(), factory));
+		applicationContext.refresh();
 
 		MongoTemplate mongoTemplate = new MongoTemplate(factory, converter);
 		mongoTemplate.setApplicationContext(applicationContext);
@@ -228,14 +228,12 @@ public class MongoTemplateUnitTests extends MongoOperationsUnitTests {
 
 	class AutogenerateableId {
 
-		@Id
-		BigInteger id;
+		@Id BigInteger id;
 	}
 
 	class NotAutogenerateableId {
 
-		@Id
-		Integer id;
+		@Id Integer id;
 
 		public Pattern getId() {
 			return Pattern.compile(".");
